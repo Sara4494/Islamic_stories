@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تجربة تسجيل الدخول بجوجل</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:#f7f7f8; margin:0; padding:0; display:flex; min-height:100vh; align-items:center; justify-content:center}
+    .card{background:#fff; padding:24px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.06); width:min(520px, 92vw)}
+    h1{font-size:20px; margin:0 0 12px}
+    p{margin:0 0 16px; color:#444}
+    button{appearance:none; border:0; border-radius:10px; padding:12px 16px; font-size:16px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.08)}
+    .primary{background:#1a73e8; color:#fff}
+    code{background:#f1f3f4; padding:2px 6px; border-radius:6px}
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .muted{font-size:12px; color:#666}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>تسجيل الدخول باستخدام Google (تجربة)</h1>
+    <p>هذا المثال يستخدم <strong>Google Identity Services</strong> لإجراء تدفق <strong>Authorization Code</strong> مع إعادة توجيه إلى الباك إند.</p>
+
+    <div class="row">
+      <button id="google-btn" class="primary">تسجيل الدخول بحساب Google</button>
+      <a id="fallback-link" href="#" rel="opener" style="text-decoration:none">رابط بديل مباشر</a>
+    </div>
+
+    <p class="muted" style="margin-top:16px">
+      سيتحول المتصفح إلى:
+      <code>http://localhost:8000/api/auth/google/callback/?code=...&state=...</code>
+      ثم يقوم الباك إند بمبادلة <code>code</code> بتوكنات.
+    </p>
+
+    <hr style="margin:20px 0; border:none; border-top:1px solid #eee" />
+
+    <p class="muted">تأكد من إضافة أصل JavaScript المسموح: 
+      <code>http://localhost:5500</code> أو نفس أصل الصفحة التي تفتح منها هذا الملف.
+    </p>
+  </div>
+
+  <script>
+    // ⚙️ عدّل القيم حسب إعداداتك
+    const CLIENT_ID = "710392951784-usr2rfb7jau79p1oqpb9tof7nrbfm18m.apps.googleusercontent.com";
+    const REDIRECT_URI = "http://localhost:8000/api/auth/google/callback/"; // من Google Console
+    const SCOPE = "openid email profile";
+
+    // توليد state عشوائي للحماية من CSRF (اختياري لكن مستحسن)
+    function randomState(len = 24) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let out = '';
+      for (let i = 0; i < len; i++) out += chars.charAt(Math.floor(Math.random()*chars.length));
+      return out;
+    }
+    const STATE = randomState();
+
+    // ✅ الطريقة الموصى بها: Google Identity Services — Code Flow مع redirect
+    window.onload = function () {
+      if (!window.google || !google.accounts || !google.accounts.oauth2) return;
+
+      const codeClient = google.accounts.oauth2.initCodeClient({
+        client_id: CLIENT_ID,
+        scope: SCOPE,
+        redirect_uri: REDIRECT_URI,
+        state: STATE,
+        ux_mode: 'redirect',
+      });
+
+      document.getElementById('google-btn').addEventListener('click', function(){
+        codeClient.requestCode();
+      });
+
+      // 🔗 رابط بديل باستخدام نقطة نهاية OAuth مباشرة (بدون مكتبة)
+      const params = new URLSearchParams({
+        client_id: CLIENT_ID,
+        redirect_uri: REDIRECT_URI,
+        response_type: 'code',
+        scope: SCOPE,
+        access_type: 'offline', // لإرجاع refresh_token في أول مرة مع prompt=consent
+        prompt: 'consent',
+        state: STATE
+      });
+      document.getElementById('fallback-link').href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    };
+  </script>
+</body>
+</html>
