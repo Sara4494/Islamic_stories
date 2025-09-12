@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%-_p8s&o5o9wg1cr$1(exu)i6j_76m+ghp1++@dfgh8^tbrjnd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = ['Islamicstories.pythonanywhere.com']
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -63,10 +63,23 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
+# تسجيل الدخول باستخدام الإيميل فقط
+ACCOUNT_LOGIN_METHODS = {"email"}
 
+# الحقول المطلوبة في التسجيل
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+
+
+
+
+# okid ovtb cplu vvwo
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "eng.sara.reiad@gmail.com"
+EMAIL_HOST_PASSWORD = "okid ovtb cplu vvwo"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

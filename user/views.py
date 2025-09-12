@@ -9,7 +9,14 @@ from rest_framework.authtoken.models import Token
 from google.oauth2 import id_token
 import requests  
 from django.conf import settings
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+ 
+ 
 
+from .models import User 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -23,7 +30,7 @@ class RegisterView(generics.CreateAPIView):
         return response
 
 
-class LoginView(generics.GenericAPIView):
+class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -79,3 +86,70 @@ class GoogleLoginCallbackView(APIView):
                 "full_name": user.full_name,
             }
         })
+from .models import User, PasswordResetOTP    
+import random
+from django.core.mail import send_mail
+
+class RequestPasswordResetView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        if not email:
+            return Response({"error": "Email required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "No user with this email"}, status=status.HTTP_404_NOT_FOUND)
+
+        # توليد OTP (6 أرقام)
+        otp = str(random.randint(100000, 999999))
+
+        # حفظه في جدول
+        PasswordResetOTP.objects.create(user=user, otp=otp)
+
+        # إرسال OTP بالإيميل
+        send_mail(
+            subject="Your Password Reset Code",
+            message=f"Your OTP code is: {otp}. It will expire in 10 minutes.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
+        return Response({"message": "OTP sent to your email!"}, status=status.HTTP_200_OK)
+
+class ResetPasswordConfirmView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        otp = request.data.get("otp")
+        password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not (email and otp and password and confirm_password):
+            return Response({"error": "Email, OTP, password, and confirm_password are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != confirm_password:
+            return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # التحقق من المستخدم
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "Invalid email"}, status=status.HTTP_404_NOT_FOUND)
+
+        # التحقق من OTP
+        try:
+            otp_obj = PasswordResetOTP.objects.filter(user=user, otp=otp).latest("created_at")
+        except PasswordResetOTP.DoesNotExist:
+            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not otp_obj.is_valid():
+            return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # تغيير الباسورد
+        user.set_password(password)
+        user.save()
+
+        # حذف الـ OTP بعد الاستخدام
+        otp_obj.delete()
+
+        return Response({"message": "Password reset successful!"}, status=status.HTTP_200_OK)
