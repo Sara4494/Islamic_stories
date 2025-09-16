@@ -1,6 +1,7 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+# ---------------- User ----------------
 class UserManager(BaseUserManager):
     def create_user(self, email, full_name, password=None, **extra_fields):
         if not email:
@@ -20,8 +21,10 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
+    profile_image = models.ImageField(upload_to="users/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_banned = models.BooleanField(default=False)  # ✅ حالة الحظر
 
     objects = UserManager()
 
@@ -29,7 +32,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["full_name"]
 
     def __str__(self):
+        
         return self.email
+    def set_ban(self, banned: bool):
+        self.is_banned = banned
+        self.is_active = not banned
+        self.save()
+ 
+
+
+
+
+
 from django.utils import timezone
 from datetime import timedelta
 class PasswordResetOTP(models.Model):

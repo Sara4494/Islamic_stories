@@ -2,7 +2,7 @@
 
 **Base URL:**  
 ```
-http://localhost:8000
+https://islamicstories.pythonanywhere.com/
 ```
 
 ---
@@ -219,84 +219,322 @@ POST /password-reset-confirm/
 
 ---
 
-## 🧪 cURL Examples
 
-### Register
-```bash
-curl -X POST http://localhost:8000/register/   -H "Content-Type: application/json"   -d '{
-    "email": "user@example.com",
-    "full_name": "User Test",
-    "password": "123456",
-    "confirm_password": "123456"
-  }'
+
+
+
+
+# 🛡️ Admin Login API Documentation
+
+## 🔹 Endpoint
+
+```
+POST /auth/admin/login/
 ```
 
-### Login
-```bash
-curl -X POST http://localhost:8000/login/   -H "Content-Type: application/json"   -d '{
-    "email": "user@example.com",
-    "password": "123456"
-  }'
+## 🔹 Description
+
+* تسجيل دخول للـ Admin فقط.
+* يرجع توكن يمكن استخدامه للوصول لكل الـ dashboard endpoints.
+* أي يوزر عادي (`is_staff=False`) سيرفض الدخول برسالة خطأ.
+
+## 🔹 Request Body (JSON)
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "adminpassword"
+}
 ```
 
-### Google Callback
-```bash
-curl -X GET "http://localhost:8000/api/auth/google/callback/?code=YOUR_GOOGLE_CODE"
+## 🔹 Response (Success)
+
+```json
+{
+  "message": "Admin login successful",
+  "token": "d7aab849cf8ad83dfb5d4e44f4c64a1191721362",
+  "user": {
+    "email": "admin@example.com",
+    "full_name": "Admin Name"
+  }
+}
+```
+
+## 🔹 Response (Invalid credentials)
+
+```json
+{
+  "error": "Invalid credentials"
+}
+```
+
+## 🔹 Response (Not an admin)
+
+```json
+{
+  "error": "Admin credentials required"
+}
+```
+
+## 🔹 Permissions
+
+* متاح لأي شخص يدخل بيانات صحيحة للـ admin.
+* يوزر عادي لا يمكنه تسجيل الدخول هنا.
+
+## 🔹 Headers (Postman)
+
+```
+Content-Type: application/json
+```
+
+## 🔹 Usage Example (Postman)
+
+1. اختر **POST** method.
+2. ضع URL:
+
+```
+http://127.0.0.1:8000/auth/admin/login/
+```
+
+3. في Body اختر **raw → JSON** وأدخل بيانات admin.
+4. اضغط **Send** لتحصل على الـ token.
+
+> استخدم الـ token في الـ Headers لكل الـ dashboard requests:
+
+```
+Authorization: Token <your_admin_token>
+```
+
+
+
+---
+
+## 🖼️ البانرات (Banners)
+
+### 🔹 إضافة بانر
+```
+POST /banners/
+```
+**Body:**
+```json
+{
+  "title": "بانر رئيسي",
+  "description": "مرحبا",
+  "image": "file.png",
+  "link": "https://example.com"
+}
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم إضافة البانر بنجاح 🎉", "data": {...} }
+```
+
+### 🔹 عرض كل البانرات
+```
+GET /banners/
+```
+**Permissions:** Authenticated users + admin  
+**Response:**  
+```json
+[ {...}, {...} ]
+```
+
+### 🔹 عرض بانر واحد
+```
+GET /banners/{id}/
+```
+**Permissions:** Authenticated users + admin  
+
+### 🔹 تعديل بانر
+```
+PUT /banners/{id}/
+```
+**Permissions:** Admin only  
+**Response:**  
+```json
+{ "message": "تم تحديث بيانات البانر ✅", "data": {...} }
+```
+
+### 🔹 حذف بانر
+```
+DELETE /banners/{id}/
+```
+**Permissions:** Admin only  
+**Response:**  
+```json
+{ "message": "تم حذف البانر 🗑️" }
 ```
 
 ---
 
-## 📱 Flutter Integration
+## 📂 الأقسام (Categories)
 
-### Register
-```dart
-Future<Map<String, dynamic>> register(String email, String fullName, String password, String confirmPassword) async {
-  final url = Uri.parse("http://localhost:8000/register/");
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json"},
-    body: jsonEncode({
-      "email": email,
-      "full_name": fullName,
-      "password": password,
-      "confirm_password": confirmPassword
-    }),
-  );
-  return jsonDecode(response.body);
-}
+### 🔹 إضافة قسم
+```
+POST /stories/categories/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم إضافة القسم بنجاح 🎉", "data": {...} }
 ```
 
-### Login
-```dart
-Future<String> login(String email, String password) async {
-  final url = Uri.parse("http://localhost:8000/login/");
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json"},
-    body: jsonEncode({"email": email, "password": password}),
-  );
-  final data = jsonDecode(response.body);
-  return data["token"];
-}
+### 🔹 عرض كل الأقسام
+```
+GET /stories/categories/
+```
+**Permissions:** Authenticated users + admin  
+
+### 🔹 تعديل قسم
+```
+PUT /stories/categories/{id}/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم تحديث القسم ✅", "data": {...} }
 ```
 
-### Google Callback
-```dart
-Future<Map<String, dynamic>> googleCallback(String code) async {
-  final url = Uri.parse("http://localhost:8000/api/auth/google/callback/?code=$code");
-  final response = await http.get(url);
-  return jsonDecode(response.body);
+### 🔹 حذف قسم
+```
+DELETE /stories/categories/{id}/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم حذف القسم 🗑️" }
+```
+
+---
+
+## 📖 القصص (Stories)
+
+### 🔹 إضافة قصة
+```
+POST /stories/stories/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم إضافة القصة بنجاح 🎉", "data": {...} }
+```
+
+### 🔹 عرض كل القصص
+```
+GET /stories/stories/
+```
+**Permissions:** Authenticated users + admin  
+
+### 🔹 عرض قصة واحدة
+```
+GET /stories/stories/{id}/
+```
+
+### 🔹 تعديل قصة
+```
+PUT /stories/stories/{id}/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم تحديث القصة ✅", "data": {...} }
+```
+
+### 🔹 حذف قصة
+```
+DELETE /stories/stories/{id}/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{ "message": "تم حذف القصة 🗑️" }
+```
+
+---
+
+## 🎬 الحلقات (Episodes)
+
+### 🔹 إضافة حلقة
+```
+POST /stories/episodes/
+```
+**Permissions:** Admin only  
+
+### 🔹 عرض الحلقات حسب القصة
+```
+GET /stories/episodes/?story={story_id}
+```
+**Permissions:** Authenticated users + admin  
+
+### 🔹 عرض حلقة واحدة
+```
+GET /stories/episodes/{id}/
+```
+
+### 🔹 البحث عن حلقة
+```
+GET /stories/episodes/?story=1&search=الحلقة الأولى
+```
+
+### 🔹 تعديل حلقة
+```
+PUT /stories/episodes/{id}/
+```
+**Permissions:** Admin only  
+
+### 🔹 حذف حلقة
+```
+DELETE /stories/episodes/{id}/
+```
+**Permissions:** Admin only  
+
+---
+
+## 📊 لوحة التحكم (Dashboard)
+
+### 🔹 إحصائيات
+```
+GET /dashboard/stats/
+```
+**Permissions:** Admin only  
+**Response:**
+```json
+{
+  "message": "تم جلب الإحصائيات بنجاح 📊",
+  "data": {
+    "categories_count": 3,
+    "stories_count": 12,
+    "banners_count": 4,
+    "users_count": 50
+  }
 }
 ```
 
 ---
 
-## 🧰 Notes
-- خزّن التوكن في `SecureStorage` أو `SharedPreferences`.
-- أرسل التوكن في الـ headers مع أي API محمي:
-```dart
-headers: {
-  "Content-Type": "application/json",
-  "Authorization": "Token $token"
-}
+## 👥 المستخدمين (Users)
+
+### 🔹 عرض كل المستخدمين + البحث
 ```
+GET /dashboard/users/?search=ahmed
+```
+**Permissions:** Admin only  
+
+### 🔹 عرض مستخدم واحد
+```
+GET /dashboard/users/{id}/
+```
+
+### 🔹 تحديث (مثلاً حظر مستخدم)
+```
+PUT /dashboard/users/{id}/update_user/
+```
+**Permissions:** Admin only  
+**Body:**
+```json
+{ "is_banned": true }
+```
+**Response:**
+```json
+{ "message": "تم تحديث حالة المستخدم ✅", "user": {...} }

@@ -1,17 +1,15 @@
-from rest_framework import status, permissions
+from rest_framework import status, permissions  
 from rest_framework import generics
 from django.contrib.auth import authenticate
 from .models import User
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer 
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from google.oauth2 import id_token
+ 
 import requests  
 from django.conf import settings
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
  
  
@@ -30,17 +28,62 @@ class RegisterView(generics.CreateAPIView):
         return response
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import permissions, status
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+
+# ------------------------------
+# Login للمستخدمين العاديين
+# ------------------------------
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+
         user = authenticate(request, email=email, password=password)
         if not user:
-            return Response({"error": "Invalid credentials"}, status=400)
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key})
+
+        return Response({
+            "message": "Login successful",
+            "token": token.key,
+            "user": {
+                "email": user.email,
+                "full_name": user.full_name,
+            }
+        })
+
+ 
+class AdminLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = authenticate(request, email=email, password=password)
+        if not user:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.is_staff:
+            return Response({"error": "Admin credentials required"}, status=status.HTTP_403_FORBIDDEN)
+
+        token, _ = Token.objects.get_or_create(user=user)
+
+        return Response({
+            "message": "Admin login successful",
+            "token": token.key,
+            "user": {
+                "email": user.email,
+                "full_name": user.full_name,
+            }
+        })
 
 
 class GoogleLoginCallbackView(APIView):
@@ -153,3 +196,6 @@ class ResetPasswordConfirmView(APIView):
         otp_obj.delete()
 
         return Response({"message": "Password reset successful!"}, status=status.HTTP_200_OK)
+
+
+ 

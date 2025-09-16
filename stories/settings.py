@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google", 
+    "banners",
+    "content",
+    "dashboard",
 ]
 SITE_ID = 1
 REST_FRAMEWORK = {
