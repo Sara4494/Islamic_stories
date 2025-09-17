@@ -20,11 +20,22 @@ class StorySerializer(serializers.ModelSerializer):
 
 class EpisodeSerializer(serializers.ModelSerializer):
     story_title = serializers.ReadOnlyField(source="story.title")
+    video_file = serializers.FileField(write_only=True, required=False)  # يقبل الملف
+    video_url = serializers.CharField(read_only=True)  # نخزن فيه اللينك
 
     class Meta:
         model = Episode
         fields = [
             "id", "story", "story_title", "episode_number", "title", "description",
             "thumbnail", "video_file", "audio_file", "youtube_url",
-            "duration_minutes", "created_at"
+            "video_url", "duration_minutes", "created_at"
         ]
+
+    def create(self, validated_data):
+        validated_data.pop("video_file", None)  # نتأكد إننا مانبعتش الفيديو للـ model
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("video_file", None)  # برضو في التحديث
+        return super().update(instance, validated_data)
+

@@ -30,19 +30,17 @@ class Story(models.Model):
 
 # حلقة
 class Episode(models.Model):
-    story = models.ForeignKey(Story, related_name="episodes", on_delete=models.CASCADE)
-    episode_number = models.PositiveIntegerField()
+    story = models.ForeignKey(Story, on_delete=models.CASCADE)
+    episode_number = models.IntegerField()
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     thumbnail = models.ImageField(upload_to="episodes/thumbnails/", blank=True, null=True)
-
-    # وسائط
-    video_file = models.FileField(upload_to="episodes/videos/", blank=True, null=True)
-    audio_file = models.FileField(upload_to="episodes/audios/", blank=True, null=True)
+    video_url = models.TextField(blank=True, null=True)  # نخزن اللينك من Dropbox
+    audio_file = models.TextField(blank=True, null=True)
     youtube_url = models.URLField(blank=True, null=True)
+    duration_minutes = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    duration_minutes = models.PositiveIntegerField(default=0)  # مدة الحلقة بالدقائق
-    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.story.title} - Episode {self.episode_number}"

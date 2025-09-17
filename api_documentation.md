@@ -224,6 +224,7 @@ POST /password-reset-confirm/
 
 
 
+
 # 🛡️ Admin Login API Documentation
 
 ## 🔹 Endpoint
@@ -293,7 +294,7 @@ Content-Type: application/json
 2. ضع URL:
 
 ```
-http://127.0.0.1:8000/auth/admin/login/
+ 
 ```
 
 3. في Body اختر **raw → JSON** وأدخل بيانات admin.
@@ -304,6 +305,7 @@ http://127.0.0.1:8000/auth/admin/login/
 ```
 Authorization: Token <your_admin_token>
 ```
+
 
 
 

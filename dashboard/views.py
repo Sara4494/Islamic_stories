@@ -15,6 +15,12 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ["email", "full_name"]
     # permission_classes = [IsAdminUser]  # ✅ admin بس
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return Response(
+            {"message": "تم جلب قائمة المستخدمين بنجاح ✅", "data": response.data},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["put", "patch"], permission_classes=[IsAdminUser])
     def update_user(self, request, pk=None):

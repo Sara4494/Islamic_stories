@@ -9,6 +9,14 @@ class BannerViewSet(viewsets.ModelViewSet):
     queryset = Banner.objects.all().order_by("-created_at")
     serializer_class = BannerSerializer
     permission_classes = [IsAdminOrReadOnlyForAuthenticated]
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return Response(
+            {"message": "تم جلب قائمة البانرات بنجاح ✅", "data": response.data},
+            status=status.HTTP_200_OK,
+        )
+
+     
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
