@@ -377,6 +377,14 @@ DELETE /banners/{id}/
 POST /stories/categories/
 ```
 **Permissions:** Admin only  
+```json
+{
+  "name": "قصص الأنبياء",
+  "description": "قسم خاص بقصص الأنبياء للأطفال",
+  "image": "http://example.com/media/categories/prophets.png"
+}
+```
+**Multipart form-data**
 **Response:**
 ```json
 { "message": "تم إضافة القسم بنجاح 🎉", "data": {...} }
@@ -386,7 +394,29 @@ POST /stories/categories/
 ```
 GET /stories/categories/
 ```
-**Permissions:** Authenticated users + admin  
+**Permissions:** Authenticated users + admin 
+```json
+{
+  "message": "تم جلب قائمة الاقسام بنجاح ✅",
+  "data": [
+    {
+      "id": 1,
+      "name": "قصص الأنبياء",
+      "description": "قسم خاص بقصص الأنبياء للأطفال",
+      "image": "http://127.0.0.1:8000/media/categories/prophets.png",
+      "stories_count": 5
+    },
+    {
+      "id": 2,
+      "name": "قصص الصحابة",
+      "description": "قصص تربوية من حياة الصحابة",
+      "image": "http://127.0.0.1:8000/media/categories/sahaba.png",
+      "stories_count": 3
+    }
+  ]
+}
+
+```
 
 ### 🔹 تعديل قسم
 ```
@@ -417,6 +447,14 @@ DELETE /stories/categories/{id}/
 POST /stories/stories/
 ```
 **Permissions:** Admin only  
+```json 
+{
+  "title": "قصة سيدنا يوسف",
+  "description": "قصة سيدنا يوسف عليه السلام للأطفال",
+  "category": 1,
+  "thumbnail": "http://example.com/media/stories/yusuf.png"
+}
+```
 **Response:**
 ```json
 { "message": "تم إضافة القصة بنجاح 🎉", "data": {...} }
@@ -426,11 +464,78 @@ POST /stories/stories/
 ```
 GET /stories/stories/
 ```
+``` json 
+{
+  "message": "تم جلب قائمة القصص بنجاح ✅",
+  "data": [
+    {
+      "id": 1,
+      "title": "قصة سيدنا يوسف",
+      "description": "قصة سيدنا يوسف عليه السلام للأطفال",
+      "category": 1,
+      "thumbnail": "http://127.0.0.1:8000/media/stories/yusuf.png",
+      "created_at": "2025-09-17T10:35:00Z"
+    },
+    {
+      "id": 2,
+      "title": "قصة أصحاب الكهف",
+      "description": "قصة دينية للأطفال من القرآن الكريم",
+      "category": 1,
+      "thumbnail": "http://127.0.0.1:8000/media/stories/kahf.png",
+      "created_at": "2025-09-17T11:20:00Z"
+    }
+  ]
+}
+```
+
+### عرض القصص علي حسب القسم 
+GET /stories/stories/?category={category_id}
+
+``` json 
+{
+  "message": "تم جلب قائمة القصص بنجاح ✅",
+  "data": [
+    {
+      "id": 1,
+      "title": "قصة سيدنا يوسف",
+      "description": "قصة سيدنا يوسف عليه السلام للأطفال",
+      "category": 1,
+      "thumbnail": "http://127.0.0.1:8000/media/stories/yusuf.png",
+      "created_at": "2025-09-17T10:35:00Z"
+    },
+    {
+      "id": 2,
+      "title": "قصة أصحاب الكهف",
+      "description": "قصة دينية للأطفال من القرآن الكريم",
+      "category": 1,
+      "thumbnail": "http://127.0.0.1:8000/media/stories/kahf.png",
+      "created_at": "2025-09-17T11:20:00Z"
+    }
+  ]
+}
+```
 **Permissions:** Authenticated users + admin  
 
 ### 🔹 عرض قصة واحدة
-```
+ 
 GET /stories/stories/{id}/
+
+``` json 
+{
+  "message": "تم جلب قائمة القصص بنجاح ✅",
+  "data": [
+    {
+      "id": 1,
+      "title": "قصة سيدنا يوسف",
+      "description": "قصة سيدنا يوسف عليه السلام للأطفال",
+      "category": 1,
+      "thumbnail": "http://127.0.0.1:8000/media/stories/yusuf.png",
+      "created_at": "2025-09-17T10:35:00Z"
+    }
+  ]
+}
+
+ 
 ```
 
 ### 🔹 تعديل قصة
@@ -463,9 +568,59 @@ POST /stories/episodes/
 ```
 **Permissions:** Admin only  
 
+``` json 
+{
+  "story": 1,
+  "episode_number": 1,
+  "title": "الحلقة الأولى",
+  "description": "بداية القصة مع المقدمة",
+  "thumbnail": "http://example.com/media/episodes/ep1.png",
+  "audio_file": "http://example.com/media/episodes/ep1.mp3",
+  "youtube_url": "https://youtube.com/watch?v=xxxx",
+  "duration_minutes": 15
+}
+```
+
+
 ### 🔹 عرض الحلقات حسب القصة
 ```
 GET /stories/episodes/?story={story_id}
+```
+
+```json 
+{
+  "message": "تم جلب قائمة الحلقات بنجاح ✅",
+  "data": [
+    {
+      "id": 1,
+      "story": 1,
+      "story_title": "قصة سيدنا يوسف",
+      "episode_number": 1,
+      "title": "الحلقة الأولى",
+      "description": "بداية القصة مع المقدمة",
+      "thumbnail": "http://127.0.0.1:8000/media/episodes/ep1.png",
+      "audio_file": "http://127.0.0.1:8000/media/episodes/ep1.mp3",
+      "youtube_url": "https://youtube.com/watch?v=xxxx",
+      "video_url": "https://dropbox.com/s/abcd123/episode1.mp4?dl=1",
+      "duration_minutes": 15,
+      "created_at": "2025-09-17T10:35:00Z"
+    },
+    {
+      "id": 2,
+      "story": 1,
+      "story_title": "قصة سيدنا يوسف",
+      "episode_number": 2,
+      "title": "الحلقة الثانية",
+      "description": "تكملة الأحداث",
+      "thumbnail": "http://127.0.0.1:8000/media/episodes/ep2.png",
+      "audio_file": null,
+      "youtube_url": null,
+      "video_url": "https://dropbox.com/s/efgh456/episode2.mp4?dl=1",
+      "duration_minutes": 12,
+      "created_at": "2025-09-17T10:50:00Z"
+    }
+  ]
+}
 ```
 **Permissions:** Authenticated users + admin  
 

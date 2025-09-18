@@ -35,7 +35,7 @@ class Episode(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     thumbnail = models.ImageField(upload_to="episodes/thumbnails/", blank=True, null=True)
-    video_url = models.TextField(blank=True, null=True)  # نخزن اللينك من Dropbox
+    video_url = models.TextField(blank=True, null=True)  
     audio_file = models.TextField(blank=True, null=True)
     youtube_url = models.URLField(blank=True, null=True)
     duration_minutes = models.IntegerField(default=0)

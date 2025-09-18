@@ -31,9 +31,16 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class StoryViewSet(viewsets.ModelViewSet):
-    queryset = Story.objects.all()
     serializer_class = StorySerializer
     permission_classes = [IsAdminOrReadOnlyForAuthenticated]
+
+    def get_queryset(self):
+        queryset = Story.objects.all()
+        category_id = self.request.query_params.get("category")  # ?category=1
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        return queryset
+
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response(
@@ -51,15 +58,25 @@ class StoryViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        return Response({"message": "تم إضافة القصة بنجاح 🎉", "data": response.data}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "تم إضافة القصة بنجاح 🎉", "data": response.data},
+            status=status.HTTP_201_CREATED,
+        )
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
-        return Response({"message": "تم تحديث القصة ✅", "data": response.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "تم تحديث القصة ✅", "data": response.data},
+            status=status.HTTP_200_OK,
+        )
 
     def destroy(self, request, *args, **kwargs):
         super().destroy(request, *args, **kwargs)
-        return Response({"message": "تم حذف القصة 🗑️"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "تم حذف القصة 🗑️"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
 
 import os
 import dropbox
@@ -87,17 +104,18 @@ def upload_to_dropbox(file_obj, filename):
 
  
 
-
 class EpisodeViewSet(viewsets.ModelViewSet):
-    queryset = Episode.objects.all()
     serializer_class = EpisodeSerializer
     filter_backends = [filters.SearchFilter]
     permission_classes = [IsAdminOrReadOnlyForAuthenticated]
-
     search_fields = ["title", "description", "story__title"]
- 
 
-
+    def get_queryset(self):
+        queryset = Episode.objects.all()
+        story_id = self.request.query_params.get("story") 
+        if story_id:
+            queryset = queryset.filter(story_id=story_id)
+        return queryset
 
     def perform_create(self, serializer):
         video_file = self.request.FILES.get("video_file")
@@ -107,6 +125,8 @@ class EpisodeViewSet(viewsets.ModelViewSet):
             serializer.save(video_url=dropbox_url)  # نخزن اللينك فقط
         else:
             serializer.save()
+
+    # GET all
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response(
@@ -121,8 +141,6 @@ class EpisodeViewSet(viewsets.ModelViewSet):
             {"message": "تم جلب الحلقة بنجاح ✅", "data": response.data},
             status=status.HTTP_200_OK,
         )
-
-
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
