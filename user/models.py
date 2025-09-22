@@ -26,6 +26,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_banned = models.BooleanField(default=False)
+    favorites = models.ManyToManyField("content.Story", related_name="favorited_by", blank=True)
 
     objects = UserManager()
 

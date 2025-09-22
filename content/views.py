@@ -1,10 +1,9 @@
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters ,permissions
 from rest_framework.response import Response
 from .models import Category, Story, Episode
 from .serializers import CategorySerializer, StorySerializer, EpisodeSerializer
 from .permissions import IsAdminOrReadOnlyForAuthenticated
-
-
+from rest_framework.views import APIView
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -78,9 +77,47 @@ class StoryViewSet(viewsets.ModelViewSet):
         )
 
 
+
+class FavoriteStoriesView(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        """عرض المفضلة"""
+        favorites = request.user.favorites.all()
+        data = [{"id": s.id, "title": s.title, "description": s.description, "image": s.image.url if s.image else None} for s in favorites]
+        return Response({"favorites": data})
+
+    def create(self, request):
+        """إضافة قصة"""
+        story_id = request.data.get("story_id")
+        if not story_id:
+            return Response({"error": "story_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            story = Story.objects.get(id=story_id)
+        except Story.DoesNotExist:
+            return Response({"error": "القصة غير موجودة"}, status=status.HTTP_404_NOT_FOUND)
+
+        request.user.favorites.add(story)
+        return Response({"message": "تم إضافة القصة إلى المفضلة ✅"})
+
+    def destroy(self, request, pk=None):
+        """حذف قصة"""
+        story_id = request.data.get("story_id")
+        if not story_id:
+            return Response({"error": "story_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            story = Story.objects.get(id=story_id)
+        except Story.DoesNotExist:
+            return Response({"error": "القصة غير موجودة"}, status=status.HTTP_404_NOT_FOUND)
+
+        request.user.favorites.remove(story)
+        return Response({"message": "تم حذف القصة من المفضلة 🗑️"})
+
+
 import os
-import dropbox
-from django.conf import settings
+ 
 
 import dropbox
 from django.conf import settings

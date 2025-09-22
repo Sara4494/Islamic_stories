@@ -698,6 +698,153 @@ DELETE /stories/stories/{id}/
 { "message": "تم حذف القصة 🗑️" }
 ```
 
+
+
+
+
+ 
+---
+
+## 📌 Endpoints
+
+### 1) عرض المفضلة (Get Favorites)
+
+**Endpoint:**
+
+```
+GET stories/favorite-stories/
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "favorites": [
+    {
+      "id": 1,
+      "title": "قصة أصحاب الكهف",
+      "description": "تفاصيل القصة ...",
+      "image": "http://islamicstories.pythonanywhere.com/media/stories/cave.jpg",
+      "category": 2,
+      "created_at": "2025-09-21T20:22:14Z"
+    },
+    {
+      "id": 5,
+      "title": "قصة يوسف عليه السلام",
+      "description": "تفاصيل القصة ...",
+      "image": null,
+      "category": 1,
+      "created_at": "2025-09-20T18:10:05Z"
+    }
+  ]
+}
+```
+
+---
+
+### 2) إضافة قصة للمفضلة (Add Favorite)
+
+**Endpoint:**
+
+```
+POST stories/favorite-stories/
+```
+
+**Request Body:**
+
+```json
+{
+  "story_id": 1
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "تم إضافة القصة إلى المفضلة ✅"
+}
+```
+
+**Errors:**
+
+* لو القصة غير موجودة:
+
+```json
+{
+  "error": "القصة غير موجودة"
+}
+```
+
+* لو story\_id مش مبعوت:
+
+```json
+{
+  "error": "story_id is required"
+}
+```
+
+---
+
+### 3) حذف قصة من المفضلة (Remove Favorite)
+
+**Endpoint:**
+
+```
+DELETE stories/favorite-stories/
+```
+
+**Request Body:**
+
+```json
+{
+  "story_id": 1
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "تم حذف القصة من المفضلة 🗑️"
+}
+```
+
+**Errors:**
+
+* لو القصة غير موجودة:
+
+```json
+{
+  "error": "القصة غير موجودة"
+}
+```
+
+* لو story\_id مش مبعوت:
+
+```json
+{
+  "error": "story_id is required"
+}
+```
+
+---
+
+### ✅ ملاحظات للمطور (Flutter Dev Notes)
+
+* لازم المستخدم يكون عامل **Login** ومعاه `Token`.
+* الـ `story_id` هو الـ ID اللي بيرجع من API القصص (`/stories/`).
+* البيانات المعادة من المفضلة هي نفس شكل بيانات القصص.
+
+---
+
+
+
+
+
+
+
+
 ---
 
 ## 🎬 الحلقات (Episodes)

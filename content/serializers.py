@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Category, Story, Episode
+from user.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -39,3 +40,5 @@ class EpisodeSerializer(serializers.ModelSerializer):
         validated_data.pop("video_file", None)  # برضو في التحديث
         return super().update(instance, validated_data)
 
+
+ 
