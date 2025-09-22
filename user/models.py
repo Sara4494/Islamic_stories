@@ -21,10 +21,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, blank=True, null=True)  # ✅ رقم التليفون
     profile_image = models.ImageField(upload_to="users/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    is_banned = models.BooleanField(default=False)  # ✅ حالة الحظر
+    is_banned = models.BooleanField(default=False)
 
     objects = UserManager()
 
@@ -32,12 +33,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["full_name"]
 
     def __str__(self):
-        
         return self.email
+
     def set_ban(self, banned: bool):
         self.is_banned = banned
         self.is_active = not banned
         self.save()
+
  
 
 

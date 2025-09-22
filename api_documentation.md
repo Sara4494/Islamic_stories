@@ -96,6 +96,146 @@ POST /login/
 }
 ```
 
+ 
+ 
+
+## 📌 Endpoints Profile 
+
+
+## 🧾 Headers المشتركة
+
+كل الطلبات لازم تحتوي على:
+
+```
+Content-Type: application/json
+Authorization: Token <USER_TOKEN>
+```
+
+### 1) Get Profile (عرض البروفايل)
+
+
+
+**Endpoint:**
+
+```
+GET /profile/
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "email": "user@example.com",
+  "full_name": "User Name",
+  "phone": "+201001234567",
+  "profile_image": "https://islamicstories.pythonanywhere.com/media/users/avatar.png"
+}
+```
+
+---
+
+### 2) Update Profile (تعديل البروفايل)
+
+**Endpoint:**
+
+```
+PUT /profile/
+```
+
+أو
+
+```
+PATCH /profile/
+```
+
+> 🔹 `PUT` → لازم تبعت كل الحقول (تحديث كامل).
+> 🔹 `PATCH` → تبعت بس الحقول اللي عايز تعدلها (تحديث جزئي).
+
+**Request Body (مثال):**
+
+```json
+{
+  "email": "newemail@example.com",
+  "full_name": "New Name",
+  "phone": "+201112223344",
+  "password": "newpassword123"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Profile updated",
+  "user": {
+    "email": "newemail@example.com",
+    "full_name": "New Name",
+    "phone": "+201112223344",
+    "profile_image": "https://islamicstories.pythonanywhere.com/media/users/avatar.png"
+  }
+}
+```
+
+---
+
+### 3) Update Profile Image (لو بترفع صورة)
+
+لو Flutter هيبعت صورة Multipart:
+
+**Endpoint:**
+
+```
+PATCH /profile/
+```
+
+**Headers:**
+
+```
+Authorization: Token <USER_TOKEN>
+Content-Type: multipart/form-data
+```
+
+**Request Body (Form Data):**
+
+```
+profile_image: <IMAGE_FILE>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Profile updated",
+  "user": {
+    "email": "user@example.com",
+    "full_name": "User Name",
+    "phone": "+201001234567",
+    "profile_image": "https://islamicstories.pythonanywhere.com/media/users/new_avatar.png"
+  }
+}
+```
+
+---
+
+### ⚠️ Errors
+
+* لو التوكن مش صالح أو مش موجود:
+
+```json
+{
+  "detail": "Invalid token."
+}
+```
+
+* لو في خطأ في البيانات:
+
+```json
+{
+  "email": ["Enter a valid email address."]
+}
+```
+
+ 
 ---
 
 ### 3) Google Login (Callback)
@@ -576,6 +716,7 @@ POST /stories/episodes/
   "description": "بداية القصة مع المقدمة",
   "thumbnail": "http://example.com/media/episodes/ep1.png",
   "audio_file": "http://example.com/media/episodes/ep1.mp3",
+  "video_file": ""
   "youtube_url": "https://youtube.com/watch?v=xxxx",
   "duration_minutes": 15
 }
@@ -695,3 +836,7 @@ PUT /dashboard/users/{id}/update_user/
 **Response:**
 ```json
 { "message": "تم تحديث حالة المستخدم ✅", "user": {...} }
+
+
+
+ 

@@ -2,7 +2,7 @@ from rest_framework import status, permissions
 from rest_framework import generics
 from django.contrib.auth import authenticate
 from .models import User
-from .serializers import RegisterSerializer 
+from .serializers import * 
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -33,10 +33,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-
-# ------------------------------
-# Login للمستخدمين العاديين
-# ------------------------------
+ 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -198,4 +195,28 @@ class ResetPasswordConfirmView(APIView):
         return Response({"message": "Password reset successful!"}, status=status.HTTP_200_OK)
 
 
- 
+
+
+class UserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """عرض البروفايل"""
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        """تعديل البروفايل بالكامل (مع الصورة)"""
+        serializer = UserUpdateSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Profile updated", "user": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        """تعديل جزئي للبروفايل (مع الصورة)"""
+        serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Profile updated", "user": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

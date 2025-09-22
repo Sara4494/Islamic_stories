@@ -18,5 +18,26 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
     
+from rest_framework import serializers
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "full_name", "profile_image"]
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = User
+        fields = ["email", "full_name", "password", "profile_image"]
+
+    def update(self, instance, validated_data):
+        # لو فيه باسورد جديد → نعمل set_password
+        password = validated_data.pop("password", None)
+        if password:
+            instance.set_password(password)
+
+        return super().update(instance, validated_data)
 

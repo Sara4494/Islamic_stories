@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView ,GoogleLoginCallbackView ,RequestPasswordResetView ,ResetPasswordConfirmView ,AdminLoginView
+from .views import RegisterView, LoginView ,GoogleLoginCallbackView ,RequestPasswordResetView ,ResetPasswordConfirmView ,AdminLoginView ,UserProfileView
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
@@ -11,6 +11,7 @@ urlpatterns = [
 
     # تأكيد OTP + تعيين باسورد جديد
     path("password-reset-confirm/", ResetPasswordConfirmView.as_view(), name="password_reset_confirm"),
+    path("profile/", UserProfileView.as_view(), name="profile"),
 ]
 
 
