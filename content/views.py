@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from .models import Category, Story, Episode
 from .serializers import CategorySerializer, StorySerializer, EpisodeSerializer
 from .permissions import IsAdminOrReadOnlyForAuthenticated
-from rest_framework.views import APIView
+from rest_framework.views import APIView 
+from rest_framework.decorators import action
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -28,16 +29,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
         super().destroy(request, *args, **kwargs)
         return Response({"message": "تم حذف القسم 🗑️"}, status=status.HTTP_204_NO_CONTENT)
 
-
 class StoryViewSet(viewsets.ModelViewSet):
     serializer_class = StorySerializer
     permission_classes = [IsAdminOrReadOnlyForAuthenticated]
 
     def get_queryset(self):
-        queryset = Story.objects.all()
-        category_id = self.request.query_params.get("category")  # ?category=1
+        queryset = Story.objects.all().order_by("-created_at")  
+        category_id = self.request.query_params.get("category")  
         if category_id:
-            queryset = queryset.filter(category_id=category_id)
+            queryset = queryset.filter(category_id=category_id).order_by("-created_at")
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -47,11 +47,16 @@ class StoryViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    # GET one
     def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+
+        # ✅ زيادة العداد كل مرة القصة تتشاف
+        instance.views_count = instance.views_count + 1
+        instance.save(update_fields=["views_count"])
+
+        serializer = self.get_serializer(instance)
         return Response(
-            {"message": "تم جلب القصه بنجاح ✅", "data": response.data},
+            {"message": "تم جلب القصه بنجاح ✅", "data": serializer.data},
             status=status.HTTP_200_OK,
         )
 
@@ -76,6 +81,15 @@ class StoryViewSet(viewsets.ModelViewSet):
             status=status.HTTP_204_NO_CONTENT,
         )
 
+    # ✅ API إضافية للقصص الأكثر شعبية
+    @action(detail=False, methods=["get"])
+    def popular(self, request):
+        queryset = Story.objects.all().order_by("-views_count")[:10]  # أول 10 قصص
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {"message": "تم جلب القصص الأكثر شعبية 🔥", "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
 
 
 class FavoriteStoriesView(viewsets.ViewSet):
@@ -85,7 +99,10 @@ class FavoriteStoriesView(viewsets.ViewSet):
         """عرض المفضلة"""
         favorites = request.user.favorites.all()
         data = [{"id": s.id, "title": s.title, "description": s.description, "image": s.image.url if s.image else None} for s in favorites]
-        return Response({"favorites": data})
+        return Response(
+            {"message": "تم جلب القصص المفضلة ✅", "data":  data},
+            status=status.HTTP_200_OK,
+        )
 
     def create(self, request):
         """إضافة قصة"""
@@ -121,9 +138,25 @@ import os
 
 import dropbox
 from django.conf import settings
+import requests
+
+
+def get_dropbox_access_token():
+    url = "https://api.dropboxapi.com/oauth2/token"
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": settings.DROPBOX_REFRESH_TOKEN,
+        "client_id": settings.DROPBOX_APP_KEY,
+        "client_secret": settings.DROPBOX_APP_SECRET,
+    }
+    response = requests.post(url, data=data)
+    response.raise_for_status()
+    return response.json()["access_token"]
+
 
 def upload_to_dropbox(file_obj, filename):
-    dbx = dropbox.Dropbox(settings.DROPBOX_ACCESS_TOKEN)
+    access_token = get_dropbox_access_token()  # نجيب Access Token جديد
+    dbx = dropbox.Dropbox(access_token)
     dropbox_path = os.path.join(settings.DROPBOX_BASE_PATH, filename)
 
     # رفع الملف (overwrite)
@@ -137,7 +170,7 @@ def upload_to_dropbox(file_obj, filename):
         shared_link_metadata = dbx.sharing_create_shared_link_with_settings(dropbox_path)
         url = shared_link_metadata.url
 
-    return url.replace("?dl=0", "?dl=1")  # نحوله داونلود مباشر
+    return url.replace("?dl=0", "?dl=1") 
 
  
 
@@ -173,11 +206,19 @@ class EpisodeViewSet(viewsets.ModelViewSet):
 
     # GET one
     def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+
+        # ✅ نزوّد عداد المشاهدات للقصة المرتبطة
+        story = instance.story
+        story.views_count = story.views_count + 1
+        story.save(update_fields=["views_count"])
+
+        serializer = self.get_serializer(instance)
         return Response(
-            {"message": "تم جلب الحلقة بنجاح ✅", "data": response.data},
+            {"message": "تم جلب الحلقة بنجاح ✅", "data": serializer.data},
             status=status.HTTP_200_OK,
         )
+
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -199,3 +240,5 @@ class EpisodeViewSet(viewsets.ModelViewSet):
             {"message": "تم حذف الحلقة 🗑️"},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+ 

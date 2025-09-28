@@ -660,24 +660,62 @@ GET /stories/stories/?category={category_id}
  
 GET /stories/stories/{id}/
 
-``` json 
+```json
 {
-  "message": "تم جلب قائمة القصص بنجاح ✅",
+  "message": "تم جلب القصه بنجاح ✅",
+  "data": {
+    "id": 1,
+    "title": "قصة سيدنا يوسف",
+    "description": "قصة سيدنا يوسف عليه السلام للأطفال",
+    "category": 1,
+    "thumbnail": "http://127.0.0.1:8000/media/stories/yusuf.png",
+    "created_at": "2025-09-17T10:35:00Z",
+    "views_count": 13
+  }
+}
+```
+
+> **ملاحظة:** عند كل طلب `GET /stories/stories/{id}/` يتم زيادة العداد `views_count` تلقائيًا.
+---
+
+### 🔹 عرض القصص الأكثر شعبية
+
+```
+GET /stories/stories/popular/
+```
+
+**Description:** إرجاع قائمة بالقصص الأكثر مشاهدة (`views_count` الأعلى).
+**Permissions:** Authenticated users + admin
+
+**Response:**
+
+```json
+{
+  "message": "تم جلب القصص الأكثر شعبية ✅",
   "data": [
+    {
+      "id": 5,
+      "title": "قصة موسى عليه السلام",
+      "description": "قصة سيدنا موسى للأطفال",
+      "category": 1,
+      "thumbnail": "http://127.0.0.1:8000/media/stories/musa.png",
+      "created_at": "2025-09-18T09:30:00Z",
+      "views_count": 50
+    },
     {
       "id": 1,
       "title": "قصة سيدنا يوسف",
       "description": "قصة سيدنا يوسف عليه السلام للأطفال",
       "category": 1,
       "thumbnail": "http://127.0.0.1:8000/media/stories/yusuf.png",
-      "created_at": "2025-09-17T10:35:00Z"
+      "created_at": "2025-09-17T10:35:00Z",
+      "views_count": 13
     }
   ]
 }
-
- 
 ```
 
+---
 ### 🔹 تعديل قصة
 ```
 PUT /stories/stories/{id}/
@@ -983,7 +1021,6 @@ PUT /dashboard/users/{id}/update_user/
 **Response:**
 ```json
 { "message": "تم تحديث حالة المستخدم ✅", "user": {...} }
-
 
 
  

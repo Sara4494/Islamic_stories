@@ -22,6 +22,7 @@ class Story(models.Model):
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="stories/", blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
+    views_count = models.PositiveIntegerField(default=0)
     
 
     def __str__(self):
